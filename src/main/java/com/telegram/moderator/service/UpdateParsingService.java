@@ -28,7 +28,7 @@ public class UpdateParsingService {
         checkIsNotNull(update);
         Message message = getMessage(update);
         checkIsNotNull(message);
-        messageProcessor.processMessage(incomeActionQueue,outcomeActionQueue, update);
+        messageProcessor.processMessage(incomeActionQueue,outcomeActionQueue, update, message);
     }
 
     private Message getMessage(Update update) {

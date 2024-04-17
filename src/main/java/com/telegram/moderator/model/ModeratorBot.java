@@ -76,7 +76,7 @@ public class ModeratorBot extends TelegramLongPollingBot {
     }
 
     private void deleteMessage(Message message) throws TelegramApiException {
-        log.info("deleteMessage(Message {})", message);
+        log.info("deleteMessage(Message id = {})", message.getMessageId());
         String chatId = String.valueOf(message.getChatId());
         Integer messageId = message.getMessageId();
         DeleteMessage deleteMessage = new DeleteMessage(chatId, messageId);
@@ -95,7 +95,7 @@ public class ModeratorBot extends TelegramLongPollingBot {
         switch (pair.getLeft()) {
             case DELETE -> processDeleteAction(pair.getRight());
             case SAVE -> processSaveAction(pair.getRight());
-            case NOTHING -> log.info("No action required for income action pair: {}", pair);
+            case NOTHING -> log.debug("No action required for income action pair: {}", pair);
             default -> log.warn("Unhandled income action type: {}", pair.getLeft());
         }
     }
@@ -103,7 +103,7 @@ public class ModeratorBot extends TelegramLongPollingBot {
     private void processOutcomeAction(Pair<OutcomeActionType, SendMessage> pair) {
         switch (pair.getLeft()) {
             case SEND -> processSendAction(pair.getRight());
-            case NOTHING -> log.info("No action required for outcome action pair: {}", pair);
+            case NOTHING -> log.debug("No action required for outcome action pair: {}", pair);
             default -> log.warn("Unhandled outcome action type: {}", pair.getLeft());
         }
     }

@@ -4,6 +4,7 @@ import com.telegram.moderator.model.IncomeActionType;
 import com.telegram.moderator.model.OutcomeActionType;
 import com.telegram.moderator.service.FormMessageService;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -18,6 +19,7 @@ import java.util.Queue;
  */
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class PhotoMessageProcessor extends AbstractMessageProcessor {
     private final FormMessageService formMessageService;
     @Value("${bot.masterId}")
@@ -26,20 +28,32 @@ public class PhotoMessageProcessor extends AbstractMessageProcessor {
     @Override
     public void processMessage(Queue<Pair<IncomeActionType, Message>> incomeActionQueue,
                                Queue<Pair<OutcomeActionType, SendMessage>> outcomeActionQueue,
-                               Update update) {
-        Message message = update.getMessage();
+                               Update update, Message message) {
+        Integer messageId = message.getMessageId();
+        log.info("processMessage with id = {}", messageId);
         if (message.hasPhoto()) {
-            incomeActionQueue.add(Pair.of(IncomeActionType.SAVE, message));
-            String text = String.format("Переслано из \"%s\", пользователь %s", message.getChat().getTitle(),
-                    message.getFrom().getUserName() == null ?
-                            message.getFrom().getFirstName() + " " + message.getFrom().getLastName() :
-                            "@" + message.getFrom().getUserName());
-
-            outcomeActionQueue.add(Pair.of(
-                    OutcomeActionType.SEND,
-                    formMessageService.getMessage(text, Long.parseLong(masterId))
-            ));
+            processPhotoMessage(incomeActionQueue, outcomeActionQueue, message, messageId);
+        } else {
+            log.info("message with id {} doesn't contain a photo", messageId);
         }
-        processNext(incomeActionQueue, outcomeActionQueue, update);
+        processNext(incomeActionQueue, outcomeActionQueue, update, message);
+    }
+
+    private void processPhotoMessage(Queue<Pair<IncomeActionType, Message>> incomeActionQueue, Queue<Pair<OutcomeActionType, SendMessage>> outcomeActionQueue, Message message, Integer messageId) {
+        log.info("message contains a photo!");
+        incomeActionQueue.add(Pair.of(IncomeActionType.SAVE, message));
+        String text = getForwardText(message);
+        log.info("add message with id {} to redirect in queue! Text is \"{}\"", messageId, text);
+        outcomeActionQueue.add(Pair.of(
+                OutcomeActionType.SEND,
+                formMessageService.getMessage(text, Long.parseLong(masterId))
+        ));
+    }
+
+    private String getForwardText(Message message) {
+        return String.format("Переслано из \"%s\", пользователь %s", message.getChat().getTitle(),
+                message.getFrom().getUserName() == null ?
+                        message.getFrom().getFirstName() + " " + message.getFrom().getLastName() :
+                        "@" + message.getFrom().getUserName());
     }
 }

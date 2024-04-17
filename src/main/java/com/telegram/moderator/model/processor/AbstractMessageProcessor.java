@@ -19,15 +19,16 @@ import java.util.Queue;
 public abstract class AbstractMessageProcessor {
     private AbstractMessageProcessor nextProcessor;
 
-    public void processMessage(Queue<Pair<IncomeActionType, Message>> incomeActionQueue,
-                               Queue<Pair<OutcomeActionType, SendMessage>> outcomeActionQueue,
-                               Update update){
-    }
+    public abstract void processMessage(Queue<Pair<IncomeActionType, Message>> incomeActionQueue,
+                                        Queue<Pair<OutcomeActionType, SendMessage>> outcomeActionQueue,
+                                        Update update, Message message);
 
-    protected void processNext(Queue<Pair<IncomeActionType, Message>> incomeActionQueue, Queue<Pair<OutcomeActionType, SendMessage>> outcomeActionQueue, Update update) {
+    protected void processNext(Queue<Pair<IncomeActionType, Message>> incomeActionQueue,
+                               Queue<Pair<OutcomeActionType, SendMessage>> outcomeActionQueue,
+                               Update update, Message message) {
         AbstractMessageProcessor nextProcessor = getNextProcessor();
         if (nextProcessor != null) {
-            nextProcessor.processMessage(incomeActionQueue, outcomeActionQueue, update);
+            nextProcessor.processMessage(incomeActionQueue, outcomeActionQueue, update, message);
         }
     }
 }
